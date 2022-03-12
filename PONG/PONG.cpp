@@ -6,6 +6,10 @@
 
 #include <time.h>       /* time */
 
+#define ID_BallCHILD  100 
+#define ID_PaddleCHILD  101
+
+
 #define MAX_LOADSTRING 100
 
 // Global Variables:
@@ -14,6 +18,7 @@ WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HINSTANCE hInstCHD;
 HINSTANCE hInstCHDP;
+
 
 
 // Forward declarations of functions included in this code module:
@@ -218,7 +223,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         wcexCHD.lpszClassName = L"REDSQ";
         wcexCHD.hIconSm = LoadIcon(wcexCHD.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-        //RegisterClassExW(&wcexCHD);
+        //RegisterClassExW(&wcexCHD);   ID_PaddleCHILD
 
         if (!RegisterClassExW(&wcexCHD))
         {
@@ -228,13 +233,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         HWND ChWnd = CreateWindow(L"REDSQ", szTitle,
             WS_CHILD | WS_VISIBLE,
             10, 10, 50, 20,
-            hWnd, NULL, hInst, NULL);
+            hWnd, (HMENU)(int)(ID_PaddleCHILD), hInst, NULL);
 
 
         if (!ChWnd)
         {
             SetWindowText(hWnd, L"Not working");
         }
+
+
 
 
         RECT rc;  /// center window 
@@ -278,7 +285,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         HWND ChWndB = CreateWindow(L"REDball", szTitle,
             WS_CHILD | WS_VISIBLE,
             10, 10, 10, 10,
-            hWnd, NULL, hInst, NULL);
+            hWnd, (HMENU)(int)(ID_BallCHILD), hInst, NULL);
 
 
 
@@ -296,7 +303,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-        //SetTimer(hWnd, 7, 50, NULL);
+        SetTimer(hWnd, 7, 500, NULL);
 
 
     } break;
@@ -309,11 +316,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         minMaxInfo->ptMinTrackSize.y = 300;/// will not allow window to hcange size height
 
     }
-
-
-
-
     break;
+
+    case WM_TIMER:
+    {
+        if (wParam == 7) {
+            RECT rcClient;
+            GetClientRect(hWnd, &rcClient);
+            EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&rcClient);
+        
+        }
+    }
+    break;
+
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -375,52 +390,57 @@ LRESULT CALLBACK WndProcCHDB(HWND ChWnd, UINT message, WPARAM wParam, LPARAM lPa
     }
     return 0;
 }
-/*
+
 
 BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
 {
     LPRECT rcParent;
-    int  idChild;
+    int i, idChild;
 
-    // Retrieve the child-window identifier. Use it to set the
-    // position of the child window.
+    // Retrieve the child-window identifier. Use it to set the 
+    // position of the child window. 
 
     idChild = GetWindowLong(hwndChild, GWL_ID);
 
+    static int x = 10;
+    static int y = 10;
+    static int lx = 0;
+    static int rx = 20;
+    static int ty = 0;
+    static int by = 20;
+    
+    if (rx >= 196)
+        x = -abs(x);
+    if (lx <= 0)
+        x = abs(x);
+    if (by >= 240)
+        y = -abs(y);
+    if (ty <= 0)
+        y = abs(y);
 
-    // Size and position the child window.
+    lx = lx + x;
+    ty = ty + y;
+    rx = rx + x;
+    by = by + y;
+    
+    if (idChild == ID_BallCHILD) {
+    
+        
 
-    rcParent = (LPRECT)lParam;
+        MoveWindow(hwndChild, lx, ty, rx - lx, by - ty, TRUE);
+    }
 
-    RECT rc;  /// center window
+    
 
-    GetWindowRect(hwndChild, &rc);
+    
 
+    // Make sure the child window is visible. 
 
+    ShowWindow(hwndChild, SW_SHOW);
 
-    srand(time(NULL));
-
-    /* generate secret number between 1 and 5: */
-    // int iSecret = rand() % 10 + 1;
-    // int iSecret = rand() % 10 + 1;
-     /*
-
-     MoveWindow(hwndChild,
-         rc.right-rc.left+ iSecret,
-         10,
-         10,
-         10,
-         TRUE);
-
-
-
-     // Make sure the child window is visible.
-
-     ShowWindow(hwndChild, SW_SHOW);
-
-     return TRUE;
+    return TRUE;
  }
 
-     */
+     
 
 
