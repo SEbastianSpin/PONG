@@ -3,7 +3,7 @@
 
 #include "framework.h"
 #include "Pong.h"
-
+#include "windowsx.h"
 #include <time.h>       /* time */
 
 #define ID_BallCHILD  100 
@@ -18,8 +18,7 @@ WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HINSTANCE hInstCHD;
 HINSTANCE hInstCHDP;
-
-
+BOOL AreWeplaying=true;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -30,14 +29,22 @@ LRESULT CALLBACK WndProcCHDB(HWND ChWnd, UINT message, WPARAM wParam, LPARAM lPa
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam);
+BOOL CALLBACK EnumChildProcPaddle(HWND hwndChild, LPARAM lParam);
 
-void GetTextInfoForKeyMsg(WPARAM wParam, const TCHAR* msgName, TCHAR* buf, int bufSize)
-{
-    static int counter = 0;
-    counter++;
-    _stprintf_s(buf, bufSize, _T("%s key: %d ( counter : %d)"), msgName, wParam, counter);
-}
 
+
+void GetTextInfoForMouseMsg(WPARAM wParam, LPARAM lParam,
+     const TCHAR * msgName, TCHAR* buf, int bufSize)
+     {
+     short x = (short)LOWORD(lParam);
+     short y = (short)HIWORD(lParam);
+     _stprintf_s(buf, bufSize, _T("%s x: %d, y: %d, vk:"),
+         msgName, x, y);
+     
+         _tcscat_s(buf, bufSize, _T(" LEFT "));
+        
+    
+     }
 
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -173,6 +180,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    HWND ChWndB;
     switch (message)
     {
     case WM_COMMAND:
@@ -187,6 +195,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case IDM_EXIT:
             DestroyWindow(hWnd);
             break;
+        case ID_FILE_NEWGAMEF2:
+
+            POINT mouseh;
+            mouseh.x = 10;
+            mouseh.y = 10;
+            SetTimer(hWnd, 7, 50, NULL);
+            AreWeplaying = true;
+            EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&mouseh);
+            break;
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
@@ -199,6 +216,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         // TODO: Add any drawing code that uses hdc here...
         EndPaint(hWnd, &ps);
     }
+    break;
+    
     break;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -282,7 +301,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SetWindowText(hWnd, L"Not working classs");
         }
 
-        HWND ChWndB = CreateWindow(L"REDball", szTitle,
+         ChWndB = CreateWindow(L"REDball", szTitle,
             WS_CHILD | WS_VISIBLE,
             10, 10, 10, 10,
             hWnd, (HMENU)(int)(ID_BallCHILD), hInst, NULL);
@@ -302,16 +321,49 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
+        TRACKMOUSEEVENT paddle;
+        paddle.cbSize = sizeof(TRACKMOUSEEVENT);
+        paddle.dwFlags = TME_HOVER;
+        paddle.hwndTrack = hWnd;
+        paddle.dwHoverTime = HOVER_DEFAULT;
 
-        SetTimer(hWnd, 7, 500, NULL);
+
+        
+       
+      if(!TrackMouseEvent(&paddle)) SetWindowText(hWnd, L"Not working TrackMouseEvent");
+
+       
+
+
+
+
+        SetTimer(hWnd, 7, 50, NULL);
+
 
 
     } break;
+
+    case WM_MOUSEHOVER:
+    {
+    case WM_MOUSEMOVE:
+    {
+        
+        POINT mouseh;
+        mouseh.x= GET_X_LPARAM(lParam);
+        mouseh.y = GET_Y_LPARAM(lParam);
+
+        EnumChildWindows(hWnd, EnumChildProcPaddle, (LPARAM)&mouseh);
+        
+    }
+    break;
+
+    }
+    break;
     case WM_GETMINMAXINFO:
     {
         MINMAXINFO* minMaxInfo = (MINMAXINFO*)lParam;
-        minMaxInfo->ptMaxSize.x = minMaxInfo->ptMaxTrackSize.x = 200;
-        minMaxInfo->ptMaxSize.y = minMaxInfo->ptMaxTrackSize.y = 300;
+        minMaxInfo->ptMaxSize.x = minMaxInfo->ptMaxTrackSize.x = 200;  //200
+        minMaxInfo->ptMaxSize.y = minMaxInfo->ptMaxTrackSize.y = 300; // 300
         minMaxInfo->ptMinTrackSize.x = 200;  /// will not allow window to hcange size width
         minMaxInfo->ptMinTrackSize.y = 300;/// will not allow window to hcange size height
 
@@ -323,7 +375,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (wParam == 7) {
             RECT rcClient;
             GetClientRect(hWnd, &rcClient);
-            EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&rcClient);
+            EnumChildWindows(hWnd, EnumChildProc, NULL);
         
         }
     }
@@ -394,35 +446,81 @@ LRESULT CALLBACK WndProcCHDB(HWND ChWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
 {
-    LPRECT rcParent;
+    //LPRECT rcParent;
     int i, idChild;
 
     // Retrieve the child-window identifier. Use it to set the 
     // position of the child window. 
 
     idChild = GetWindowLong(hwndChild, GWL_ID);
+    POINT paddlepos;
+    GetCursorPos(&paddlepos);
+     
 
+    HWND daddy= GetParent(hwndChild);
+   
     static int x = 10;
     static int y = 10;
     static int lx = 0;
     static int rx = 20;
     static int ty = 0;
     static int by = 20;
+
+
+    if (lParam!=NULL) {
+        LPPOINT ball = (LPPOINT)lParam;
+        x = ball->x;
+        y = ball->y;
+        lx = 0;
+        rx = 20;
+        ty = 0;
+         by = 20;
+    }
     
-    if (rx >= 196)
+    if (rx >= 190)
         x = -abs(x);
     if (lx <= 0)
         x = abs(x);
-    if (by >= 240)
+    if (by >= 235)
         y = -abs(y);
     if (ty <= 0)
         y = abs(y);
+
+
+
+    //SetCursorPos(100, 10);
+   
+   
+
+
+
+    ScreenToClient(daddy, &paddlepos);
+
+    TCHAR s[256];
+
+    _stprintf_s(s, 256, _T(" Paddle posx: %d mouse posx %d y %d "), paddlepos.x, lx ,ty);
+    //SetWindowText(daddy, s);
+
+   
+    if (paddlepos.x +25 >= lx && paddlepos.x - 25 <= lx && ty>=200) {
+       // SetWindowText(daddy, L"COLLI");
+        y = -abs(y);
+
+    }
+    
+
+    if (ty >= 210) { /// losgin
+        // SetWindowText(daddy, L"COLLI");
+        KillTimer(daddy, 7);
+        AreWeplaying = false;
+
+    }
 
     lx = lx + x;
     ty = ty + y;
     rx = rx + x;
     by = by + y;
-    
+
     if (idChild == ID_BallCHILD) {
     
         
@@ -430,8 +528,7 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
         MoveWindow(hwndChild, lx, ty, rx - lx, by - ty, TRUE);
     }
 
-    
-
+   
     
 
     // Make sure the child window is visible. 
@@ -441,6 +538,36 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
     return TRUE;
  }
 
-     
+
+
+
+
+BOOL CALLBACK EnumChildProcPaddle(HWND hwndChild, LPARAM lParam)
+{
+    //LPRECT rcParent;
+    int i, idChild;
+
+    // Retrieve the child-window identifier. Use it to set the 
+    // position of the child window. 
+
+    idChild = GetWindowLong(hwndChild, GWL_ID);
+
+
+
+    LPPOINT padde = (LPPOINT)lParam;
+    if (idChild == ID_PaddleCHILD && AreWeplaying) {
+
+        MoveWindow(hwndChild, (LONG)padde->x-25, 220, 50, 20, TRUE);
+
+    }
+
+
+    // Make sure the child window is visible. 
+
+    ShowWindow(hwndChild, SW_SHOW);
+
+    return TRUE;
+}
+
 
 
