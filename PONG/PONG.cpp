@@ -249,7 +249,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
         
-                case ID_BACKGROUND_BITMAP:
+        case ID_BACKGROUND_BITMAP:
 
                 {
                     OPENFILENAME ofn;       // common dialog box structure
@@ -275,14 +275,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                     // Display the Open dialog box.
 
-                    if (GetOpenFileName(&ofn) == TRUE)
-                        hf = CreateFile(ofn.lpstrFile,
+                    if (GetOpenFileName(&ofn) == TRUE) {
+                        HBITMAP Nback = (HBITMAP)LoadImageW(NULL, ofn.lpstrFile, IMAGE_BITMAP, LR_DEFAULTSIZE, LR_DEFAULTSIZE, LR_LOADFROMFILE);
+                        if (!Nback) SetWindowText(hWnd, L"FAILED");
+
+                        HBRUSH Novoback = CreatePatternBrush(Nback);
+                        SetClassLongPtr(hWnd, -10, (LONG)Novoback);  // GCLP_ HBRBACKGROUND -10
+                        InvalidateRect(hWnd, NULL, TRUE);
+                    }
+                        /*hf = CreateFile(ofn.lpstrFile,
                             GENERIC_READ,
                             0,
                             (LPSECURITY_ATTRIBUTES)NULL,
                             OPEN_EXISTING,
                             FILE_ATTRIBUTE_NORMAL,
                             (HANDLE)NULL);
+                            */
+                   // TCHAR s[280];
+
+                    //_stprintf_s(s, 280, _T("%s"), ofn.lpstrFile);
+
+                    //etWindowText(hWnd,s); //  check that the file works
+                 
+                    HBITMAP Nback=(HBITMAP)LoadImageW(NULL, ofn.lpstrFile,IMAGE_BITMAP, LR_DEFAULTSIZE, LR_DEFAULTSIZE, LR_LOADFROMFILE);
+                    if (!Nback) SetWindowText(hWnd,L"FAILED");
+
+
+                  //   TCHAR s[280];
+
+                  //  _stprintf_s(s, 280, _T("%ld"), GetLastError());
+
+                  //  SetWindowText(hWnd,s);  // check that the file works
+
+                   
+                    
+                  
+                   
+                    
                 }
                     break;
                 
@@ -456,7 +485,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_GETMINMAXINFO:
     {
         MINMAXINFO* minMaxInfo = (MINMAXINFO*)lParam;
-        minMaxInfo->ptMaxSize.x = minMaxInfo->ptMaxTrackSize.x = 200;  //200
+        minMaxInfo->ptMaxSize.x = minMaxInfo->ptMaxTrackSize.x = 800;  //200
         minMaxInfo->ptMaxSize.y = minMaxInfo->ptMaxTrackSize.y = 300; // 300
         minMaxInfo->ptMinTrackSize.x = 200;  /// will not allow window to hcange size width
         minMaxInfo->ptMinTrackSize.y = 300;/// will not allow window to hcange size height
