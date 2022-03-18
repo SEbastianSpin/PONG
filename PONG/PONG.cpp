@@ -4,6 +4,9 @@
 #include "framework.h"
 #include "Pong.h"
 #include "windowsx.h"
+
+#include "commdlg.h"
+#include "Windows.h"
 #include <time.h>       /* time */
 
 #define ID_BallCHILD  100 
@@ -19,6 +22,10 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HINSTANCE hInstCHD;
 HINSTANCE hInstCHDP;
 BOOL AreWeplaying=true;
+int counter = 0;
+WCHAR paddle[] = L"REDSQ";   // the ball window class name
+
+HWND ChWnd;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -200,25 +207,72 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             POINT mouseh;
             mouseh.x = 10;
             mouseh.y = 10;
-            SetTimer(hWnd, 7, 50, NULL);
+            SetTimer(hWnd, 7, 500, NULL);
             AreWeplaying = true;
+            counter = 0;
+            RECT rcPaddle;
+            GetClientRect(ChWnd, &rcPaddle);
+           
+
+            InvalidateRect(ChWnd, &rcPaddle, false);
             EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&mouseh);
+            break;
+
+        case ID_BACKGROUND_COLOR:
+
+        {
+
+            CHOOSECOLOR cc;                 // common dialog box structure 
+            static COLORREF acrCustClr[16]; // array of custom colors 
+            HWND hwnd;                      // owner window
+            HBRUSH hbrush;                  // brush handle
+            static DWORD rgbCurrent;        // initial color selection
+
+            // Initialize CHOOSECOLOR 
+            ZeroMemory(&cc, sizeof(cc));
+            cc.lStructSize = sizeof(cc);
+            cc.hwndOwner = hWnd;
+            cc.lpCustColors = (LPDWORD)acrCustClr;
+            cc.rgbResult = rgbCurrent;
+            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+            if (ChooseColor(&cc) == TRUE)
+            {
+                hbrush = CreateSolidBrush(cc.rgbResult);
+                rgbCurrent = cc.rgbResult;
+            }
+
+
+        
+        }
             break;
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
     }
     break;
+    
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
+       // HWND paddle=FindWindowExA(hWnd,NULL,NULL,NULL);
+        //HWND ball = FindWindowExA(hWnd, paddle, NULL, NULL);
         HDC hdc = BeginPaint(hWnd, &ps);
-        // TODO: Add any drawing code that uses hdc here...
+
+       // TCHAR s[3];
+
+       // _stprintf_s(s, 3, _T("%d"),counter);
+        
+      // TextOut(hdc, 0, 0, s, (int)_tcslen(s));
+
+        
         EndPaint(hWnd, &ps);
+        //UpdateWindow(hWnd);
+        
+        
     }
-    break;
     
-    break;
+    break; 
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -239,7 +293,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         wcexCHD.hIcon = LoadIcon(hInstCHD, MAKEINTRESOURCE(IDI_PONG));
         wcexCHD.hbrBackground = (HBRUSH)COLOR_BACKGROUND + 1;
         wcexCHD.lpszMenuName = MAKEINTRESOURCEW(IDC_PONG);
-        wcexCHD.lpszClassName = L"REDSQ";
+        wcexCHD.lpszClassName = paddle;
         wcexCHD.hIconSm = LoadIcon(wcexCHD.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
         //RegisterClassExW(&wcexCHD);   ID_PaddleCHILD
@@ -249,7 +303,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SetWindowText(hWnd, L"Not working classs");
         }
 
-        HWND ChWnd = CreateWindow(L"REDSQ", szTitle,
+         ChWnd = CreateWindow(L"REDSQ", szTitle,
             WS_CHILD | WS_VISIBLE,
             10, 10, 50, 20,
             hWnd, (HMENU)(int)(ID_PaddleCHILD), hInst, NULL);
@@ -337,7 +391,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-        SetTimer(hWnd, 7, 50, NULL);
+        SetTimer(hWnd, 7, 500, NULL);
 
 
 
@@ -414,11 +468,31 @@ LRESULT CALLBACK WndProcCHD(HWND ChWnd, UINT message, WPARAM wParam, LPARAM lPar
 {
 
 
-
     switch (message)
     {
 
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+        // HWND paddle=FindWindowExA(hWnd,NULL,NULL,NULL);
+         //HWND ball = FindWindowExA(hWnd, paddle, NULL, NULL);
+        HDC hdc = BeginPaint(ChWnd, &ps);
 
+        TCHAR s[3];
+
+        _stprintf_s(s, 3, _T("%d"), counter);
+
+         TextOut(hdc, 20, 0, s, (int)_tcslen(s));
+
+         SetTextAlign(hdc, TA_CENTER);
+
+        EndPaint(ChWnd, &ps);
+        UpdateWindow(ChWnd);
+
+
+    }
+
+    break;
 
     default:
         return DefWindowProc(ChWnd, message, wParam, lParam);
@@ -506,6 +580,13 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
        // SetWindowText(daddy, L"COLLI");
         y = -abs(y);
 
+        RECT rcPaddle;
+        GetClientRect(ChWnd, &rcPaddle);
+        counter++;
+
+        InvalidateRect(ChWnd, &rcPaddle,false);
+      
+
     }
     
 
@@ -513,6 +594,7 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
         // SetWindowText(daddy, L"COLLI");
         KillTimer(daddy, 7);
         AreWeplaying = false;
+
 
     }
 
@@ -532,6 +614,8 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
     
 
     // Make sure the child window is visible. 
+
+    UpdateWindow(hwndChild);
 
     ShowWindow(hwndChild, SW_SHOW);
 
