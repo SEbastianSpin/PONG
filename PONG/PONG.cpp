@@ -21,7 +21,7 @@ WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HINSTANCE hInstCHD;
 HINSTANCE hInstCHDP;
-BOOL AreWeplaying=true;
+BOOL AreWeplaying = true;
 int counter = 0;
 WCHAR paddle[] = L"REDSQ";   // the ball window class name
 
@@ -41,17 +41,17 @@ BOOL CALLBACK EnumChildProcPaddle(HWND hwndChild, LPARAM lParam);
 
 
 void GetTextInfoForMouseMsg(WPARAM wParam, LPARAM lParam,
-     const TCHAR * msgName, TCHAR* buf, int bufSize)
-     {
-     short x = (short)LOWORD(lParam);
-     short y = (short)HIWORD(lParam);
-     _stprintf_s(buf, bufSize, _T("%s x: %d, y: %d, vk:"),
-         msgName, x, y);
-     
-         _tcscat_s(buf, bufSize, _T(" LEFT "));
-        
-    
-     }
+    const TCHAR* msgName, TCHAR* buf, int bufSize)
+{
+    short x = (short)LOWORD(lParam);
+    short y = (short)HIWORD(lParam);
+    _stprintf_s(buf, bufSize, _T("%s x: %d, y: %d, vk:"),
+        msgName, x, y);
+
+    _tcscat_s(buf, bufSize, _T(" LEFT "));
+
+
+}
 
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -212,7 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             counter = 0;
             RECT rcPaddle;
             GetClientRect(ChWnd, &rcPaddle);
-           
+
 
             InvalidateRect(ChWnd, &rcPaddle, false);
             EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&mouseh);
@@ -240,79 +240,79 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 hbrush = CreateSolidBrush(cc.rgbResult);
                 rgbCurrent = cc.rgbResult;
-                SetClassLongPtr(hWnd,-10, (LONG)hbrush);  // GCLP_ HBRBACKGROUND -10
+                SetClassLongPtr(hWnd, -10, (LONG)hbrush);  // GCLP_ HBRBACKGROUND -10
                 InvalidateRect(hWnd, NULL, TRUE);
             }
 
-           //
+            //
+
+        }
+        break;
         
-        }
-            break;
-/*
-        case ID_BACKGROUND_BITMAP:
+                case ID_BACKGROUND_BITMAP:
 
-        {
-            OPENFILENAME ofn;       // common dialog box structure
-            char szFile[260];       // buffer for file name
-                    
-            HANDLE hf;              // file handle
+                {
+                    OPENFILENAME ofn;       // common dialog box structure
+                    WCHAR szFile[260];       // buffer for file name
 
-            // Initialize OPENFILENAME
-            ZeroMemory(&ofn, sizeof(ofn));
-            ofn.lStructSize = sizeof(ofn);
-            ofn.hwndOwner = hWnd;  // owner window
-            ofn.lpstrFile = szFile;
-            // Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
-            // use the contents of szFile to initialize itself.
-            ofn.lpstrFile[0] = '\0';
-            ofn.nMaxFile = sizeof(szFile);
-            ofn.lpstrFilter = "All\0*.*\0Text\0*.TXT\0";
-            ofn.nFilterIndex = 1;
-            ofn.lpstrFileTitle = NULL;
-            ofn.nMaxFileTitle = 0;
-            ofn.lpstrInitialDir = NULL;
-            ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+                    HANDLE hf;              // file handle
 
-            // Display the Open dialog box. 
+                    // Initialize OPENFILENAME
+                    ZeroMemory(&ofn, sizeof(ofn));
+                    ofn.lStructSize = sizeof(ofn);
+                    ofn.hwndOwner = hWnd;  // owner window
+                    ofn.lpstrFile = szFile;
+                    // Set lpstrFile[0] to '\0' so that GetOpenFileName does not
+                    // use the contents of szFile to initialize itself.
+                    ofn.lpstrFile[0] = '\0';
+                    ofn.nMaxFile = sizeof(szFile);
+                    ofn.lpstrFilter = L".BMP";
+                    ofn.nFilterIndex = 1;
+                    ofn.lpstrFileTitle = NULL;
+                    ofn.nMaxFileTitle = 0;
+                    ofn.lpstrInitialDir = NULL;
+                    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
-            if (GetOpenFileName(&ofn) == TRUE)
-                hf = CreateFile(ofn.lpstrFile,
-                    GENERIC_READ,
-                    0,
-                    (LPSECURITY_ATTRIBUTES)NULL,
-                    OPEN_EXISTING,
-                    FILE_ATTRIBUTE_NORMAL,
-                    (HANDLE)NULL);
-        }
-            break;
-        */
+                    // Display the Open dialog box.
+
+                    if (GetOpenFileName(&ofn) == TRUE)
+                        hf = CreateFile(ofn.lpstrFile,
+                            GENERIC_READ,
+                            0,
+                            (LPSECURITY_ATTRIBUTES)NULL,
+                            OPEN_EXISTING,
+                            FILE_ATTRIBUTE_NORMAL,
+                            (HANDLE)NULL);
+                }
+                    break;
+                
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
     }
     break;
-    
+
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
-       // HWND paddle=FindWindowExA(hWnd,NULL,NULL,NULL);
-        //HWND ball = FindWindowExA(hWnd, paddle, NULL, NULL);
+        // HWND paddle=FindWindowExA(hWnd,NULL,NULL,NULL);
+         //HWND ball = FindWindowExA(hWnd, paddle, NULL, NULL);
         HDC hdc = BeginPaint(hWnd, &ps);
 
-       // TCHAR s[3];
+        // TCHAR s[3];
 
-       // _stprintf_s(s, 3, _T("%d"),counter);
-        
-      // TextOut(hdc, 0, 0, s, (int)_tcslen(s));
+        // _stprintf_s(s, 3, _T("%d"),counter);
 
-        
+       // TextOut(hdc, 0, 0, s, (int)_tcslen(s));
+
+
         EndPaint(hWnd, &ps);
         //UpdateWindow(hWnd);
-        
-        
+
+
     }
-    
-    break; 
+
+    break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -343,7 +343,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SetWindowText(hWnd, L"Not working classs");
         }
 
-         ChWnd = CreateWindow(L"REDSQ", szTitle,
+        ChWnd = CreateWindow(L"REDSQ", szTitle,
             WS_CHILD | WS_VISIBLE,
             10, 10, 50, 20,
             hWnd, (HMENU)(int)(ID_PaddleCHILD), hInst, NULL);
@@ -395,7 +395,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SetWindowText(hWnd, L"Not working classs");
         }
 
-         ChWndB = CreateWindow(L"REDball", szTitle,
+        ChWndB = CreateWindow(L"REDball", szTitle,
             WS_CHILD | WS_VISIBLE,
             10, 10, 10, 10,
             hWnd, (HMENU)(int)(ID_BallCHILD), hInst, NULL);
@@ -422,11 +422,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         paddle.dwHoverTime = HOVER_DEFAULT;
 
 
-        
-       
-      if(!TrackMouseEvent(&paddle)) SetWindowText(hWnd, L"Not working TrackMouseEvent");
 
-       
+
+        if (!TrackMouseEvent(&paddle)) SetWindowText(hWnd, L"Not working TrackMouseEvent");
+
+
 
 
 
@@ -441,13 +441,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_MOUSEMOVE:
     {
-        
+
         POINT mouseh;
-        mouseh.x= GET_X_LPARAM(lParam);
+        mouseh.x = GET_X_LPARAM(lParam);
         mouseh.y = GET_Y_LPARAM(lParam);
 
         EnumChildWindows(hWnd, EnumChildProcPaddle, (LPARAM)&mouseh);
-        
+
     }
     break;
 
@@ -470,7 +470,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             RECT rcClient;
             GetClientRect(hWnd, &rcClient);
             EnumChildWindows(hWnd, EnumChildProc, NULL);
-        
+
         }
     }
     break;
@@ -522,9 +522,9 @@ LRESULT CALLBACK WndProcCHD(HWND ChWnd, UINT message, WPARAM wParam, LPARAM lPar
 
         _stprintf_s(s, 3, _T("%d"), counter);
 
-         TextOut(hdc, 20, 0, s, (int)_tcslen(s));
+        TextOut(hdc, 20, 0, s, (int)_tcslen(s));
 
-         SetTextAlign(hdc, TA_CENTER);
+        SetTextAlign(hdc, TA_CENTER);
 
         EndPaint(ChWnd, &ps);
         UpdateWindow(ChWnd);
@@ -569,10 +569,10 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
     idChild = GetWindowLong(hwndChild, GWL_ID);
     POINT paddlepos;
     GetCursorPos(&paddlepos);
-     
 
-    HWND daddy= GetParent(hwndChild);
-   
+
+    HWND daddy = GetParent(hwndChild);
+
     static int x = 10;
     static int y = 10;
     static int lx = 0;
@@ -581,16 +581,16 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
     static int by = 20;
 
 
-    if (lParam!=NULL) {
+    if (lParam != NULL) {
         LPPOINT ball = (LPPOINT)lParam;
         x = ball->x;
         y = ball->y;
         lx = 0;
         rx = 20;
         ty = 0;
-         by = 20;
+        by = 20;
     }
-    
+
     if (rx >= 190)
         x = -abs(x);
     if (lx <= 0)
@@ -603,8 +603,8 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
 
 
     //SetCursorPos(100, 10);
-   
-   
+
+
 
 
 
@@ -612,23 +612,23 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
 
     TCHAR s[256];
 
-    _stprintf_s(s, 256, _T(" Paddle posx: %d mouse posx %d y %d "), paddlepos.x, lx ,ty);
+    _stprintf_s(s, 256, _T(" Paddle posx: %d mouse posx %d y %d "), paddlepos.x, lx, ty);
     //SetWindowText(daddy, s);
 
-   
-    if (paddlepos.x +25 >= lx && paddlepos.x - 25 <= lx && ty>=200) {
-       // SetWindowText(daddy, L"COLLI");
+
+    if (paddlepos.x + 25 >= lx && paddlepos.x - 25 <= lx && ty >= 200) {
+        // SetWindowText(daddy, L"COLLI");
         y = -abs(y);
 
         RECT rcPaddle;
         GetClientRect(ChWnd, &rcPaddle);
         counter++;
 
-        InvalidateRect(ChWnd, &rcPaddle,false);
-      
+        InvalidateRect(ChWnd, &rcPaddle, false);
+
 
     }
-    
+
 
     if (ty >= 210) { /// losgin
         // SetWindowText(daddy, L"COLLI");
@@ -644,14 +644,14 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
     by = by + y;
 
     if (idChild == ID_BallCHILD) {
-    
-        
+
+
 
         MoveWindow(hwndChild, lx, ty, rx - lx, by - ty, TRUE);
     }
 
-   
-    
+
+
 
     // Make sure the child window is visible. 
 
@@ -660,7 +660,7 @@ BOOL CALLBACK EnumChildProc(HWND hwndChild, LPARAM lParam)
     ShowWindow(hwndChild, SW_SHOW);
 
     return TRUE;
- }
+}
 
 
 
@@ -681,7 +681,7 @@ BOOL CALLBACK EnumChildProcPaddle(HWND hwndChild, LPARAM lParam)
     LPPOINT padde = (LPPOINT)lParam;
     if (idChild == ID_PaddleCHILD && AreWeplaying) {
 
-        MoveWindow(hwndChild, (LONG)padde->x-25, 220, 50, 20, TRUE);
+        MoveWindow(hwndChild, (LONG)padde->x - 25, 220, 50, 20, TRUE);
 
     }
 
